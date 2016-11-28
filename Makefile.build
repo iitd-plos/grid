@@ -1,0 +1,18 @@
+include config.mak
+
+HOST_TYPE=`uname -m`
+
+VPATH=$(SRCDIR)
+
+include $(SRCDIR)/Make.conf
+
+PROGS += gridserver
+PROGS += gridclient
+
+all: $(PROGS)
+
+gridserver:
+	echo "hello server"
+
+gridclient:
+	echo "hello client"
