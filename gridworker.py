@@ -24,9 +24,11 @@ def run_job(job_id):
   print "Running on core " + str(job_id)
   while True:
     task = getwork.delay()
+    while (not task.ready()):
+      pass
     (work_id, work) = task.get(timeout=3600)
     if (work_id > 0 and execute(work)):
-      print "work_id " + str(work_id) + ", work " + work
+      #print "work_id " + str(work_id) + ", work " + work
       donework.delay((work_id, work))
 
 def execute(work):
