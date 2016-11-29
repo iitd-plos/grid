@@ -3,6 +3,8 @@
 import Queue
 import subprocess
 import os
+import socket
+import time
 import datetime
 import argparse
 import shutil
@@ -23,13 +25,14 @@ def main():
 def run_job(job_id):
   print "Running on core " + str(job_id)
   while True:
-    task = getwork.delay()
+    task = getwork.delay(socket.gethostname())
     while (not task.ready()):
       pass
-    (work_id, work) = task.get(timeout=3600)
-    if (work_id > 0 and execute(work)):
+    (work_id, wn, ts, work) = task.get(timeout=3600)
+    if (work_id > 0):
+      execute(work)
       #print "work_id " + str(work_id) + ", work " + work
-      donework.delay((work_id, work))
+      donework.delay((work_id, wn, ts, work))
     time.sleep(2)
 
 def execute(work):

@@ -17,7 +17,7 @@ def main():
   parser.add_argument("job", help='job command', nargs="+")
   args = parser.parse_args()
   #job_command = utils.merge_multiple_globs(args.job)
-  job_command = "".join(args.job)
+  job_command = " ".join(args.job)
   submit.delay(job_command)
 
 if __name__ == "__main__":
