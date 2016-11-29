@@ -30,6 +30,7 @@ def run_job(job_id):
     if (work_id > 0 and execute(work)):
       #print "work_id " + str(work_id) + ", work " + work
       donework.delay((work_id, work))
+    time.sleep(2)
 
 def execute(work):
   subprocess.call(work, shell=True)
