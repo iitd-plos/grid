@@ -9,6 +9,7 @@ $(build)/Makefile: Makefile.build
 
 runmaster::
 	celery -A gridmaster worker -c1 --loglevel=info > master.out 2>&1 &
+	sleep 5
 	python gridinit.py
 
 runworker::
