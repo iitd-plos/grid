@@ -15,6 +15,7 @@ if [ $source_path == `pwd` ]; then
   #mkdir -p `pwd`/../debug
   mkdir -p $build_dir
   config_host_mak="$source_path/config-host.mak"
+  config_host_py="$source_path/config_host.py"
   config_mak="$build_dir/config.mak"
 
   #make config-host.mak
@@ -25,6 +26,8 @@ if [ $source_path == `pwd` ]; then
   echo "build=\$(abspath $build_dir)" >> $config_host_mak
  
   echo "include $source_path/config-host.mak" > $config_mak
+  echo "srcdir=\"$source_path\"" > $config_host_py
+  echo "build_dir=\"$build_dir\"" >> $config_host_py
 else
   build_dir=`pwd`
 fi
