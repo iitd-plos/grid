@@ -1,45 +1,54 @@
+CELERY_AMQP_TASK_RESULT_EXPIRES = 60
+
 from celery import Celery
-#from queuelib import FifoDiskQueue
+from queuelib import FifoDiskQueue
 from config_host import *
 import Queue
 import datetime
 import os
 import shelve
-#import pickle
+import pickle
 
 gridmaster_host = os.environ['GRIDMASTER_HOST']
 #print "gridmaster_host = " + gridmaster_host
-app = Celery('gridmaster', backend='rpc://', broker='pyamqp://guest@' + gridmaster_host + '//')
+app = Celery('gridmaster', backend='rpc://', broker='pyamqp://' + gridmaster_host)
 
-@app.task
+@app.task()
 def init():
-  state = shelve.open(build_dir + "/state")
-  state['counter'] = 1
-  state['readyq'] = []
-  state['workq'] = []
-  state['doneq'] = []
-  state.close()
+  counter_state = shelve.open(build_dir + "/counter_state")
+  counter_state['counter'] = 1
+  counter_state.close()
+  workq_state = shelve.open(build_dir + "/workq_state")
+  workq_state['workq'] = []
+  workq_state.close()
+  readyq = FifoDiskQueue(build_dir + "/readyq")
+  readyq.close()
+  del readyq
+  doneq = FifoDiskQueue(build_dir + "/doneq")
+  doneq.close()
+  del doneq
 
-@app.task
+@app.task(ignore_result=True)
 def submit(task):
-  state = shelve.open(build_dir + "/state")
-  print "submitting \"" + task + "\" at counter " + str(state['counter'])
-  readyq = state['readyq']
-  readyq.append((state['counter'], task))
-  state['counter'] += 1
-  state['readyq'] = readyq
-  state.close()
+  counter_state = shelve.open(build_dir + "/counter_state")
+  print "submitting \"" + task + "\" at counter " + str(counter_state['counter'])
+  cur_counter = counter_state['counter']
+  counter_state['counter'] = cur_counter + 1
+  counter_state.close()
+  readyq = FifoDiskQueue(build_dir + "/readyq")
+  readyq.push(pickle.dumps((cur_counter, task), protocol=2))
+  readyq.close()
 
 @app.task
 def getwork(workername):
   curtime = datetime.datetime.now()
   mycounter = 0
   task = ""
-  state = shelve.open(build_dir + "/state")
-  readyq = state['readyq']
-  workq = state['workq']
+  readyq = FifoDiskQueue(build_dir + "/readyq")
+  workq_state = shelve.open(build_dir + "/workq_state")
+  workq = workq_state['workq']
   if len(readyq) > 0:
-    (mycounter, task) = readyq.pop(0)
+    (mycounter, task) = pickle.loads(readyq.pop())
     workq.append((mycounter, workername, curtime, task))
     print "getwork returned \"" + task + "\" at mycounter " + str(mycounter)
   else:
@@ -53,12 +62,12 @@ def getwork(workername):
     #    workq.pop(0)
     #    workq.append((wcounter, workername, curtime, task))
     #    mycounter = wcounter
-  state['readyq'] = readyq
-  state['workq'] = workq
-  state.close()
+  workq_state['workq'] = workq
+  workq_state.close()
+  readyq.close()
   return (mycounter, workername, curtime, task)
 
-@app.task
+@app.task(ignore_result=True)
 def donework(task):
   #print "donework called"
   curtime = datetime.datetime.now()
@@ -66,9 +75,9 @@ def donework(task):
   #print str(mycounter) + " " + workername + " " + work
   remove_index = -1
   i = 0
-  state = shelve.open(build_dir + "/state")
-  workq = state['workq']
-  doneq = state['doneq']
+  workq_state = shelve.open(build_dir + "/workq_state")
+  workq = workq_state['workq']
+  doneq = FifoDiskQueue(build_dir + "/doneq")
   for w in workq:
     (wcount, wname, wts, wwork) = w
     if wcount == mycounter:
@@ -76,27 +85,35 @@ def donework(task):
     i += 1
   if remove_index >= 0:
     del workq[remove_index]
-    doneq.append((mycounter, workername, ts, curtime, work))
+    doneq.push(pickle.dumps((mycounter, workername, ts, curtime, work), protocol=2))
   else:
     print "Error: task counter not in workq"
-  state['workq'] = workq
-  state['doneq'] = doneq
-  state.close()
+  workq_state['workq'] = workq
+  doneq.close()
+  workq_state.close()
 
 @app.task
 def stats():
   ret = "WorkQ entries:\n"
-  state = shelve.open(build_dir + "/state")
-  for w in state['workq']:
+  workq_state = shelve.open(build_dir + "/workq_state")
+  workq_size = 0
+  for w in workq_state['workq']:
     (wcount, wname, wts, wwork) = w
     ret += str(wcount) + " : " + str(wname) + " : " + str(wts) + " : " + wwork + "\n"
-  ret += "DoneQ entries:\n"
-  for w in state['doneq']:
-    (wcount, wname, wts_start, wts_stop, wwork) = w
-    ret += str(wcount) + " : " + str(wname) + " : " + str(wts_start) + " : " + str(wts_stop) + " : " + wwork + "\n"
-  ret += "Counter: " + str(state['counter']) + "\n"
-  ret += "ReadyQ: " + str(len(state['readyq'])) + "\n"
-  ret += "WorkQ: " + str(len(state['workq'])) + "\n"
-  ret += "DoneQ: " + str(len(state['doneq'])) + "\n"
-  state.close()
+    workq_size += 1
+  workq_state.close()
+  #ret += "DoneQ entries:\n"
+  #for w in state['doneq']:
+  #  (wcount, wname, wts_start, wts_stop, wwork) = w
+  #  ret += str(wcount) + " : " + str(wname) + " : " + str(wts_start) + " : " + str(wts_stop) + " : " + wwork + "\n"
+  counter_state = shelve.open(build_dir + "/counter_state")
+  ret += "Counter: " + str(counter_state['counter']) + "\n"
+  counter_state.close()
+  readyq = FifoDiskQueue(build_dir + "/readyq")
+  ret += "ReadyQ: " + str(len(readyq)) + "\n"
+  readyq.close()
+  ret += "WorkQ: " + str(workq_size) + "\n"
+  doneq = FifoDiskQueue(build_dir + "/doneq")
+  ret += "DoneQ: " + str(len(doneq)) + "\n"
+  doneq.close()
   return ret

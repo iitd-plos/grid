@@ -8,6 +8,7 @@ $(build)/Makefile: Makefile.build
 	cp $< $@
 
 runmaster::
+	rm -rf $(build)/readyq $(build)/doneq
 	celery -A gridmaster worker -c1 --loglevel=info > master.out 2>&1 &
 	sleep 2
 	python gridinit.py
