@@ -10,7 +10,8 @@ import pickle
 
 gridmaster_host = os.environ['GRIDMASTER_HOST']
 #print "gridmaster_host = " + gridmaster_host
-app = Celery('gridmaster', backend='rpc://', broker='pyamqp://' + gridmaster_host)
+app = Celery('gridmaster', backend='rpc://', broker='pyamqp://guest@' + gridmaster_host + '//')
+#app = Celery('gridmaster', backend='rpc://', broker='redis://' + gridmaster_host + ':6379/0')
 
 @app.task(ignore_result=True)
 def submit(task):

@@ -1,0 +1,7 @@
+If rabbitmq stops working, do this:
+
+service stop rabbitmq
+ps aux | grep epmd
+ps aux | grep erl
+
+kill both these types of processes
