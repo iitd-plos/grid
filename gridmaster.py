@@ -15,18 +15,25 @@ app = Celery('gridmaster', backend='rpc://', broker='pyamqp://' + gridmaster_hos
 
 @app.task()
 def init():
+  print "init called"
   counter_state = shelve.open(build_dir + "/counter_state")
   counter_state['counter'] = 1
   counter_state.close()
+  print "counter_state inited"
   workq_state = shelve.open(build_dir + "/workq_state")
   workq_state['workq'] = []
   workq_state.close()
+  print "workq state inited"
   readyq = FifoDiskQueue(build_dir + "/readyq")
   readyq.close()
   del readyq
+  print "readyq inited"
   doneq = FifoDiskQueue(build_dir + "/doneq")
   doneq.close()
   del doneq
+  print "doneq inited"
+  print "init done"
+  return ""
 
 @app.task(ignore_result=True)
 def submit(task):
