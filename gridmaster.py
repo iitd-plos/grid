@@ -1,5 +1,3 @@
-CELERY_AMQP_TASK_RESULT_EXPIRES = 60
-
 from celery import Celery
 from celery.task.control import discard_all
 from queuelib import FifoDiskQueue
