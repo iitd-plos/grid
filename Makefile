@@ -9,9 +9,8 @@ $(build)/Makefile: Makefile.build
 
 runmaster::
 	rm -rf $(build)/readyq $(build)/doneq
-	celery -A gridmaster worker --concurrency 1 --loglevel=info > master.out 2>&1 &
-	sleep 2
 	python gridinit.py
+	celery -A gridmaster worker --concurrency 1 --loglevel=info > master.out 2>&1 &
 
 runworker::
 	python gridworker.py > worker.$(HOSTNAME).out 2>&1 &
