@@ -16,8 +16,8 @@ runworker::
 	python gridworker.py > worker.$(HOSTNAME).out 2>&1 &
 
 killmaster::
-	pkill -9 -f "celery"
+	-pkill -9 -f "celery"
 	rm -rf $(build)/readyq $(build)/workq_state $(build)/doneq $(build)/counter_state
 
 killworker::
-	pkill -9 -f "gridworker.py"
+	-pkill -9 -f "gridworker.py"
