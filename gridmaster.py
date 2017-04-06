@@ -6,8 +6,8 @@ import Queue
 import datetime
 import os
 import shelve
-#import pickle
-import json
+import pickle
+#import json
 
 #app.conf.task_serializer = 'json'
 gridmaster_host = os.environ['GRIDMASTER_HOST']
