@@ -1,2 +1,2 @@
-apt-get install celeryd python-pip
-pip install queuelib
+apt-get install python-dev python3-dev python-pip rabbitmq-server
+pip install --upgrade Celery queuelib

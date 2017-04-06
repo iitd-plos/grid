@@ -1,3 +1,9 @@
+See install.sh for installing
+
+Noticed that upgrading to celery-4+ was required to get it to work. Also, 'pip install Celery' installs in /usr/local/bin/celery, which co-exists with /usr/bin/celery, so need to specify full path
+
+----
+
 If rabbitmq stops working, do this:
 
 service stop rabbitmq

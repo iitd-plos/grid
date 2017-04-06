@@ -10,7 +10,7 @@ $(build)/Makefile: Makefile.build
 runmaster::
 	rm -rf $(build)/readyq $(build)/doneq
 	python gridinit.py
-	celery -A gridmaster worker --concurrency 1 --loglevel=debug > master.out 2>&1 &
+	/usr/local/bin/celery -A gridmaster worker --concurrency 1 --loglevel=debug > master.out 2>&1 &
 
 runworker::
 	python gridworker.py > worker.$(HOSTNAME).out 2>&1 &
