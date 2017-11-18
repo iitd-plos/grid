@@ -14,11 +14,12 @@ from gridmaster import donework
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument("job", help='job command', nargs="+")
+  parser.add_argument("filename", help='file containing newline-separated jobs', type = str)
   args = parser.parse_args()
-  #job_command = utils.merge_multiple_globs(args.job)
-  job_command = " ".join(args.job)
-  submit.delay(job_command)
+  with open(args.filename, 'r') as fh:
+    for line in fh:
+      if line[0] != '#':
+        submit.delay(job_command)
 
 if __name__ == "__main__":
   main()
