@@ -1,3 +1,14 @@
+Running
+=======
+
+For killing all programs on all xorav nodes, use killall_grid.py
+
+use restart_grid.py to killall and restart grid
+
+For striping the jobs to multiple files and running each file on a separate node, use stripe_jobs.py
+
+Installing
+==========
 See install.sh for installing
 
 Noticed that upgrading to celery-4+ was required to get it to work. Also, 'pip install Celery' installs in /usr/local/bin/celery, which co-exists with /usr/bin/celery, so need to specify full path

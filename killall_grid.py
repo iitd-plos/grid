@@ -29,3 +29,5 @@ for w in workers:
   subprocess.call("ssh xorav" + w + " \"killall -9 eqgen\"", shell=True)
   subprocess.call("ssh xorav" + w + " \"killall -9 llvm2tfg\"", shell=True)
   subprocess.call("ssh xorav" + w + " \"killall -9 yices_smt2\"", shell=True)
+  subprocess.call("ssh xorav" + w + " \"killall -9 z3\"", shell=True)
+  subprocess.call("ssh xorav" + w + " \"killall -9 eq\"", shell=True)
