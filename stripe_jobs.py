@@ -36,7 +36,7 @@ def main():
         node_num = "0" + node_num
       node_name = "xorav" + node_num
       logfile = node_name + ".log"
-      cmd = "ssh " + node_name + " \"parallel -j 1 :::: " + jobs_filename[i] + "\""
+      cmd = "ssh " + node_name + " \"parallel -j 8 :::: " + jobs_filename[i] + "\""
       p.append(subprocess.Popen(cmd, shell=True))
     for i in range(0, 15):
       p[i].communicate()

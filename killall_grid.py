@@ -23,6 +23,7 @@ for w in workers:
   cmd = "ssh xorav" + w + " \"source .profile && cd grid && make killworker\""
   print "execing " + cmd
   subprocess.call(cmd, shell=True)
+  subprocess.call("ssh xorav" + w + " \"killall -9 perl\"", shell=True)
   subprocess.call("ssh xorav" + w + " \"killall -9 harvest\"", shell=True)
   subprocess.call("ssh xorav" + w + " \"killall -9 h2p\"", shell=True)
   subprocess.call("ssh xorav" + w + " \"killall -9 peepgen\"", shell=True)
